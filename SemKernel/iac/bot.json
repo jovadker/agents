@@ -1,0 +1,85 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "botId": {
+            "type": "String"
+        },
+        "sku": {
+            "defaultValue": "S1",
+            "allowedValues": [
+                "F0",
+                "S1"
+            ],
+            "type": "String"
+        },
+        "appType": {
+            "defaultValue": "multitenant",
+            "type": "String"
+        },
+        "msAppId": {
+            "type": "String"
+        },
+        "tenantId": {
+            "type": "String"
+        },
+        "msiResourceId": {
+            "type": "String"
+        },
+        "displayName": {
+            "defaultValue": "",
+            "type": "String"
+        },
+        "resourceTags": {
+            "defaultValue": {
+                "Microsoft.BotService/botServices": {}
+            },
+            "type": "Object"
+        },
+        "region": {
+            "defaultValue": "global",
+            "type": "String"
+        },
+        "secretContentType": {
+            "defaultValue": "",
+            "type": "String"
+        },
+        "messagingEndpoint": {
+            "defaultValue": "",
+            "type": "String"
+        }
+
+    },
+    "variables": {
+        "botDisplayName": "[if(empty(parameters('displayName')), parameters('botId'), parameters('displayName'))]",
+        "empty": {},
+        "identityResourceName": "[parameters('botId')]",
+        "identityResourceID": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('identityResourceName'))]",
+        "botTags": "[if(contains(parameters('resourceTags'), 'Microsoft.BotService/botServices'), parameters('resourceTags')['Microsoft.BotService/botServices'], variables('empty'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.BotService/botServices",
+            "apiVersion": "2018-07-12",
+            "name": "[variables('botDisplayName')]",
+            "location": "[parameters('region')]",
+            "dependsOn": [
+            ],
+            "tags": "[variables('botTags')]",
+            "sku": {
+                "name": "[parameters('sku')]"
+            },
+            "kind": "azurebot",
+            "properties": {
+                "displayName": "[variables('botDisplayName')]",
+                "msaAppType": "[parameters('appType')]",
+                "msaAppId": "[parameters('msAppId')]",
+                "msaAppTenantId": "[parameters('tenantId')]",
+                "msaAppMSIResourceId": "[variables('identityResourceID')]",
+                "openWithHint": "",
+                "appPasswordHint": "",
+                "endpoint": "[parameters('messagingEndpoint')]"
+            }
+        }
+    ]
+}
