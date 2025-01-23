@@ -6,7 +6,7 @@ set -e
 
 current_date_time=$(date +%Y%m%d)
 
-resource_group_name=Telephony.Automated.RG
+resource_group_name=AIBot.Automated.RG
 location=eastus
 botId=copilotstudiobot$current_date_time
 web_app_name=automatedbot$current_date_time
