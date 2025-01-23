@@ -17,7 +17,7 @@ jobs:
      - shell: bash
        run: |
             # Find all Solution.xml files in the solution directory and its subdirectories
-            chmod +x ./acs/deploy.sh
+            chmod +x ./SemKernel/deploy.sh
             cd acs
             ./deploy.sh
 
