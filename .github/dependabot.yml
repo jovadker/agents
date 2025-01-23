@@ -5,7 +5,7 @@
 
 version: 2
 updates:
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/botframeworkauth" # Location of package manifests
+  - package-ecosystem: "nuget" # See documentation for possible values
+    directory: "/SemKernel" # Location of package manifests
     schedule:
       interval: "weekly"
