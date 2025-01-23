@@ -15,8 +15,7 @@ namespace AIBot.Plugins
 {
     public class BingPlugin
     {
-
-        BingTextSearch m_TextSearch = new BingTextSearch(apiKey: "");
+        BingTextSearch m_TextSearch = new BingTextSearch(apiKey: AppCommonSettings.BingApiKey);
         // Build a text search plugin with Bing search and add to the kernel
 
         [KernelFunction("SearchInternet")]

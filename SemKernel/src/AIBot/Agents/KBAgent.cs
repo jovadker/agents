@@ -26,7 +26,7 @@ namespace AIBot.Agents
             You are a friendly assistant that helps people find information in your knowledge base.
             Consider to use your plugins to provide the best answers to the user's questions and only use the internet when necessary.
             If you don't understand the question, you can ask the user to rephrase it or ask for more details.
-                        
+            If there is relevant information from {{BingPlugin}}, include that in your response with cititation containing the URLs from the search.                        
             """;
         /*make sure to format it nicely using an adaptive card.
 

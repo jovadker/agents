@@ -105,7 +105,8 @@ namespace AIBot
             // Register the KBAgent
             services.AddTransient<KBAgent>();
 
-           
+            Configuration.GetSection("AppCommonSettings").Get<AppCommonSettings>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
