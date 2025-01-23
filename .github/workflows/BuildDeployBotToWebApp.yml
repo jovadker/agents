@@ -11,11 +11,11 @@ on:
       resourceGroup:
         description: 'Resource group of the Azure Web App hosting the Azure AI bot'
         required: true
-        default: Telephony.Automated.Rg
+        default: AIBot.Automated.Rg
       webAppName:
         description: 'Azure Web App Name'
         required: true
-        default: automatedbot20250106
+        default: automatedbot20250123
 
 permissions:
   contents: read
@@ -41,10 +41,10 @@ jobs:
             ${{ runner.os }}-nuget-
 
       - name: Build with dotnet
-        run: dotnet build ./acs/src/AIBot/AIBot.csproj --configuration Release
+        run: dotnet build ./SemKernel/src/AIBot/AIBot.csproj --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish ./acs/src/AIBot/AIBot.csproj -c Release -o ${{env.DOTNET_ROOT}}/AIBot
+        run: dotnet publish ./SemKernel/src/AIBot/AIBot.csproj -c Release -o ${{env.DOTNET_ROOT}}/AIBot
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
