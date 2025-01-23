@@ -47,7 +47,7 @@ jobs:
         run: dotnet publish ./SemKernel/src/AIBot/AIBot.csproj -c Release -o ${{env.DOTNET_ROOT}}/AIBot
 
       - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: AIBot
           path: ${{env.DOTNET_ROOT}}/AIBot
