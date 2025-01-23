@@ -27,7 +27,7 @@ namespace AIBot.Plugins
         private readonly IAzureAISearchService _searchService = searchService;
 
         [KernelFunction("Search")]
-        [Description("Searches for the most relevant text data in the collection. {{collection='aoai'}}. This is a global knowledge base")]
+        [Description("Searches for the most relevant text data in the collection. {{collection='aoai'}}. This is a private knowledge base")]
         [return: Description("Search results in the global knowledge base")]
         public async Task<string> SearchAsync(
             string query,

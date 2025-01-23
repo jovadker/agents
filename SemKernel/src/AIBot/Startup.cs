@@ -13,6 +13,7 @@ using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 using Microsoft.SemanticKernel;
 using System;
@@ -59,7 +60,9 @@ namespace AIBot
 
             // Register Semantic Kernel
             var kernelBuilder = services.AddKernel();
-           
+            
+            kernelBuilder.Services.AddLogging(services => services.AddDebug().SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace));
+
             kernelBuilder.Services.AddSingleton<SearchIndexClient>((_) => new SearchIndexClient(
                 new Uri(Configuration.GetSection("AIServices:VectorStores:AzureAISearch").GetValue<string>("Endpoint")),
                 new AzureKeyCredential(Configuration.GetSection("AIServices:VectorStores:AzureAISearch").GetValue<string>("ApiKey")), 

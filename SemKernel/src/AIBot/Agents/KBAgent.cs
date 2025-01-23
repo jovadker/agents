@@ -13,6 +13,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Azure;
 using AIBot.Plugins;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
+using Microsoft.SemanticKernel.Data;
 
 namespace AIBot.Agents
 {
@@ -22,8 +24,8 @@ namespace AIBot.Agents
         private readonly Kernel _kernel;
         private const string AgentInstructions = """
             You are a friendly assistant that helps people find information in your knowledge base.
-            You can ask follow up questions until you have enough information to answer the customers question or instruction,
-            but once you have the understanding, answer it in a well-structured way in the same language in which the input was written.
+            Consider to use your plugins to provide the best answers to the user's questions and only use the internet when necessary.
+            If you don't understand the question, you can ask the user to rephrase it or ask for more details.
                         
             """;
         /*make sure to format it nicely using an adaptive card.
@@ -44,6 +46,7 @@ namespace AIBot.Agents
         {
             this._kernel = kernel;
             this._kernel.Plugins.Add(KernelPluginFactory.CreateFromType<DateTimePlugin>());
+            this._kernel.Plugins.Add(KernelPluginFactory.CreateFromType<BingPlugin>());
         }
 
         /// <summary>
@@ -56,8 +59,6 @@ namespace AIBot.Agents
             var chatCompletionService = this._kernel.GetRequiredService<IChatCompletionService>();
             //Chat history for Semantic Kernel
             ChatHistory chatHistory = new ChatHistory();
-            //Add system messages to chat history
-            chatHistory.AddSystemMessage(AgentInstructions);
             foreach (HistoryContent msg in history)
             {
                 chatHistory.Add(new ChatMessageContent(msg.AuthorRole, msg.Content));
@@ -71,7 +72,8 @@ namespace AIBot.Agents
             // Enable planning
             OpenAIPromptExecutionSettings openAIPromptExecutionSettings = new()
             {
-                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+                ChatSystemPrompt = AgentInstructions
             };
 
             var result = await chatCompletionService.GetChatMessageContentAsync(

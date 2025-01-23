@@ -4,10 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using AIBot.Agents;
 using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Schema;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -17,7 +19,7 @@ namespace AIBot.Bots
     /// <summary>
     /// Vadkerti's EchoBot
     /// </summary>
-    public class KBAgentBot : ActivityHandler
+    public class KBAgentBot : TeamsActivityHandler
     {
         private BotState _conversationState;
         private BotState _userState;
@@ -55,27 +57,50 @@ namespace AIBot.Bots
         /// <returns></returns>
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
-            //get the state from memory storage
-            var accessor = _conversationState.CreateProperty<ConversationData>("Data");
-            var conversationData = await accessor.GetAsync(turnContext, () => new ConversationData());
-            if (conversationData.ChatHistory == null)
+
+            if (turnContext.Activity.Attachments != null && turnContext.Activity.Attachments.Any())
             {
-                conversationData.ChatHistory = new List<HistoryContent>();
+                foreach (var attachment in turnContext.Activity.Attachments)
+                {
+                    // Process each attachment
+                    var fileName = attachment.Name;
+                    var fileContentUrl = attachment.ContentUrl;
+
+                    // You can download the file content using the ContentUrl
+                    // For example, using HttpClient
+                    using (var httpClient = new HttpClient())
+                    {
+                        var fileContent = await httpClient.GetByteArrayAsync(fileContentUrl);
+                        // Handle the file content as needed
+                    }
+
+                    await turnContext.SendActivityAsync(MessageFactory.Text($"Received file: {fileName}"), cancellationToken);
+                }
             }
-            Stopwatch stopwatch = new Stopwatch();
-            
-            stopwatch.Start();
+            else
+            {
+                //get the state from memory storage
+                var accessor = _conversationState.CreateProperty<ConversationData>("Data");
+                var conversationData = await accessor.GetAsync(turnContext, () => new ConversationData());
+                if (conversationData.ChatHistory == null)
+                {
+                    conversationData.ChatHistory = new List<HistoryContent>();
+                }
+                Stopwatch stopwatch = new Stopwatch();
 
-            string userMessage = turnContext.Activity.Text;
-            
-            var answer = await this.m_KBAgent.InvokeAgentAsync(userMessage, conversationData.ChatHistory);
+                stopwatch.Start();
 
-            stopwatch.Stop();
+                string userMessage = turnContext.Activity.Text;
 
-            //send back to client
-            var replyText = answer.Content;
-            await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
-            await turnContext.SendActivityAsync(MessageFactory.Text($"Time: {stopwatch.ElapsedMilliseconds} ms"), cancellationToken);
+                var answer = await this.m_KBAgent.InvokeAgentAsync(userMessage, conversationData.ChatHistory);
+
+                stopwatch.Stop();
+
+                //send back to client
+                var replyText = answer.Content;
+                await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
+                await turnContext.SendActivityAsync(MessageFactory.Text($"Time: {stopwatch.ElapsedMilliseconds} ms"), cancellationToken);
+            }
 
         }
 
@@ -108,5 +133,7 @@ namespace AIBot.Bots
         {
             return base.OnEndOfConversationActivityAsync(turnContext, cancellationToken);
         }
+
+        
     }
 }
