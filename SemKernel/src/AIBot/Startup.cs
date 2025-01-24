@@ -1,6 +1,7 @@
 ﻿// Generated with EchoBot .NET Template version v4.22.0
 
 using AIBot.Agents;
+using AIBot.Config;
 using AIBot.Plugins;
 using Azure;
 using Azure.Identity;
@@ -32,6 +33,7 @@ namespace AIBot
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
             services.AddHttpClient().AddControllers().AddNewtonsoftJson(options =>
             {
                 options.SerializerSettings.MaxDepth = HttpHelper.BotMessageSerializerSettings.MaxDepth;
@@ -60,44 +62,42 @@ namespace AIBot
 
             // Register Semantic Kernel
             var kernelBuilder = services.AddKernel();
-            
+
             kernelBuilder.Services.AddLogging(services => services.AddDebug().SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace));
 
+            // Reading the appsettings.json or Azure Web App settings
+            Configuration.GetSection("AIServices").Get<AIServices>();
+            Configuration.GetSection("AIServices:AzureOpenAI").Get<AzureOpenAIConfig>();
+            Configuration.GetSection("AIServices:AzureAISearch").Get<AzureAISearchConfig>();
+            Configuration.GetSection("AIServices:AzureOpenAIEmbeddings").Get<AzureOpenAIEmbeddingsConfig>();
+            Configuration.GetSection("AppCommonSettings").Get<AppCommonSettings>();
+
             kernelBuilder.Services.AddSingleton<SearchIndexClient>((_) => new SearchIndexClient(
-                new Uri(Configuration.GetSection("AIServices:VectorStores:AzureAISearch").GetValue<string>("Endpoint")),
-                new AzureKeyCredential(Configuration.GetSection("AIServices:VectorStores:AzureAISearch").GetValue<string>("ApiKey")), 
+                new Uri(AzureAISearchConfig.Endpoint),
+                new AzureKeyCredential(AzureAISearchConfig.ApiKey),
                 new Azure.Search.Documents.SearchClientOptions()));
-            
+
             // Custom AzureAISearchService to configure request parameters and make a request.
             kernelBuilder.Services.AddSingleton<IAzureAISearchService, AzureAISearchService>();
 
 #pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             // Embedding generation service to convert string query to vector
-            kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(Configuration.GetSection("AIServices:AzureOpenAIEmbeddings").GetValue<string>("DeploymentName"),
-                Configuration.GetSection("AIServices:AzureOpenAIEmbeddings").GetValue<string>("Endpoint"),
-                Configuration.GetSection("AIServices:AzureOpenAI").GetValue<string>("ApiKey"));
+            kernelBuilder.AddAzureOpenAITextEmbeddingGeneration(AzureOpenAIEmbeddingsConfig.DeploymentName,
+                AzureOpenAIEmbeddingsConfig.Endpoint,
+                AzureOpenAIConfig.ApiKey);
 #pragma warning restore SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-            // Register the AI service of your choice. AzureOpenAI and OpenAI are demonstrated...
-            if (Configuration.GetSection("AIServices").GetValue<bool>("UseAzureOpenAI"))
-            {
-                services.AddAzureOpenAIChatCompletion(
-                    deploymentName: Configuration.GetSection("AIServices:AzureOpenAI").GetValue<string>("DeploymentName"),
-                    endpoint: Configuration.GetSection("AIServices:AzureOpenAI").GetValue<string>("Endpoint"),
-                    apiKey: Configuration.GetSection("AIServices:AzureOpenAI").GetValue<string>("ApiKey"));
+            services.AddAzureOpenAIChatCompletion(
+                deploymentName: AzureOpenAIConfig.DeploymentName,
+                endpoint: AzureOpenAIConfig.Endpoint,
+                apiKey: AzureOpenAIConfig.ApiKey);
 
-                    //Use the Azure CLI (for local) or Managed Identity (for Azure running app) to authenticate to the Azure OpenAI service
-                    /*credentials: new ChainedTokenCredential(
-                       new AzureCliCredential(),
-                       new ManagedIdentityCredential()
-                    )) */;
-            }
-            else
-            {
-                services.AddOpenAIChatCompletion(
-                    modelId: Configuration.GetSection("AIServices:OpenAI").GetValue<string>("ModelId"),
-                    apiKey: Configuration.GetSection("AIServices:OpenAI").GetValue<string>("ApiKey"));
-            }
+            //Use the Azure CLI (for local) or Managed Identity (for Azure running app) to authenticate to the Azure OpenAI service
+            /*credentials: new ChainedTokenCredential(
+               new AzureCliCredential(),
+               new ManagedIdentityCredential()
+            )) */
+            ;
 
             // Register Azure AI Search Plugin
             kernelBuilder.Plugins.AddFromType<AzureAISearchPlugin>();
@@ -105,7 +105,7 @@ namespace AIBot
             // Register the KBAgent
             services.AddTransient<KBAgent>();
 
-            Configuration.GetSection("AppCommonSettings").Get<AppCommonSettings>();
+            
 
         }
 

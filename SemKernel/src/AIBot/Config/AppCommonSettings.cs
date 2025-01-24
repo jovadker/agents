@@ -1,4 +1,4 @@
-﻿namespace AIBot
+﻿namespace AIBot.Config
 {
     public class AppCommonSettings
     {
