@@ -35,6 +35,7 @@ az deployment group create --resource-group $resource_group_name \
       appServicePlanName=automatedbotAppPlan appServicePlanLocation=$location \
       appType=UserAssignedMSI appId=$client_id appSecret="" tenantId=$tenant_id \
       UMSIName=$identity_name UMSIResourceGroupName=$resource_group_name \
+      appInsightsName=${web_app_name}AppInsights \
     --verbose
 
 az deployment group create --resource-group $resource_group_name \

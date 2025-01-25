@@ -75,6 +75,12 @@
       "metadata": {
         "description": "The User-Assigned Managed Identity Resource Group used for the Bot's Authentication."
       }
+    },
+    "appInsightsName": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the Application Insights resource."
+      }
     }
   },
   "variables": {
@@ -110,11 +116,32 @@
   },
   "resources": [
     {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2021-06-01",
+      "name": "[concat(parameters('appInsightsName'), '-workspace')]",
+      "location": "[resourceGroup().location]",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[parameters('appInsightsName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "Application_Type": "web",
+        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces/', concat(parameters('appInsightsName'), '-workspace'))]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.OperationalInsights/workspaces/', concat(parameters('appInsightsName'), '-workspace'))]"
+      ]
+    },
+    {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2018-05-01",
       "name": "storageDeployment",
       "resourceGroup": "[resourceGroup().name]",
       "dependsOn": [
+        "[concat('Microsoft.Insights/components/', parameters('appInsightsName'))]"
       ],
       "properties": {
         "mode": "Incremental",
@@ -170,6 +197,14 @@
                     {
                       "name": "MicrosoftAppTenantId",
                       "value": "[variables('appType').tenantId]"
+                    },
+                    {
+                      "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                      "value": "[reference(resourceId('microsoft.insights/components', parameters('appInsightsName')), '2015-05-01').InstrumentationKey]"
+                    },
+                    {
+                      "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                      "value": "[reference(resourceId('microsoft.insights/components', parameters('appInsightsName')), '2015-05-01').ConnectionString]"
                     }
                   ],
                   "cors": {
