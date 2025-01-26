@@ -30,6 +30,9 @@ echo "Client ID: $client_id"
 echo "Resource ID: $resource_id"
 echo "Tenant ID: $tenant_id"
 
+user_id=$(az ad signed-in-user show --query id --output tsv)
+echo "User ID: $user_id"
+
 # https://github.com/Azure-Samples/openai/tree/main/End_to_end_Solutions
 
 az deployment group create --resource-group $resource_group_name \
@@ -37,6 +40,7 @@ az deployment group create --resource-group $resource_group_name \
     --parameters openaiServiceName=$openaiservicename \
       storageAccountName=$storageAccountName \
       searchServicesName=$searchServiceName \
+      userId=$user_id \
     --verbose
 
 az deployment group create --resource-group $resource_group_name \
@@ -54,6 +58,21 @@ az deployment group create --resource-group $resource_group_name \
       msAppId=$client_id tenantId=$tenant_id msiResourceId=$identity_id \
       messagingEndpoint=https://$web_app_name.azurewebsites.net/api/messages \
 
+
+# get the user id running the script az ad signed-in-user show
+#subscription_id=$(az account show --query id --output tsv)
+
+# Check if the role assignment already exists
+#role_assignment_exists=$(az role assignment list --assignee $user_id --role "Storage Blob Data Contributor" \
+#  --scope "subscriptions/${subscription_id}/resourceGroups/${resource_group_name}/providers/Microsoft.Storage/storageAccounts/${storageAccountName}" --query "[].id" --output tsv)
+
+#if [ -z "$role_assignment_exists" ]; then
+  # Assign the Storage Blob Data Contributor role to the identity
+#  az role assignment create --assignee-object-id $user_id --role "Storage Blob Data Contributor" \
+#    --scope "subscriptions/${subscription_id}/resourceGroups/${resource_group_name}/providers/Microsoft.Storage/storageAccounts/${storageAccountName}"
+#else
+#  echo "Role assignment already exists."
+#fi
 
 # building the app
 #dotnet build ./src/jovadkerecho/EchoBot.csproj -c Release
