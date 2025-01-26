@@ -15,7 +15,7 @@ on:
       webAppName:
         description: 'Azure Web App Name'
         required: true
-        default: automatedbot20250123
+        default: automatedbotjv001
 
 permissions:
   contents: read
