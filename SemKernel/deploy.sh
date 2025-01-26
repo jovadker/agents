@@ -5,11 +5,14 @@ set -e
 # az account set --subscription baa70448-593c-4dc7-8a91-c92cf7eaf66e
 
 current_date_time=$(date +%Y%m%d)
-
+postfix=jv001
 resource_group_name=AIBot.Automated.RG
 location=eastus2
-botId=copilotstudiobot$current_date_time
-web_app_name=automatedbot$current_date_time
+botId=copilotstudiobot$postfix
+web_app_name=automatedbot$postfix
+openaiservicename=automatedbotopenai$postfix
+storageAccountName=searchstorage$postfix
+searchServiceName=searchservice$postfix
 
 az group create --name $resource_group_name --location $location
 
@@ -27,7 +30,14 @@ echo "Client ID: $client_id"
 echo "Resource ID: $resource_id"
 echo "Tenant ID: $tenant_id"
 
+# https://github.com/Azure-Samples/openai/tree/main/End_to_end_Solutions
 
+az deployment group create --resource-group $resource_group_name \
+    --template-file ./iac/ai.json \
+    --parameters openaiServiceName=$openaiservicename \
+      storageAccountName=$storageAccountName \
+      searchServicesName=$searchServiceName \
+    --verbose
 
 az deployment group create --resource-group $resource_group_name \
     --template-file ./iac/BotWebApp.json \

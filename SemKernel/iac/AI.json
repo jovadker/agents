@@ -1,0 +1,183 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "openaiServiceName": {
+            "type": "String"
+        },
+        "storageAccountName": {
+            "type": "String"
+        },
+        "searchServicesName":{
+            "type": "String"
+        }
+    },
+    "variables": {
+    },
+    "resources": [
+        {
+            "type": "Microsoft.CognitiveServices/accounts",
+            "apiVersion": "2024-10-01",
+            "name": "[parameters('openaiServiceName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "S0"
+            },
+            "kind": "OpenAI",
+            "properties": {
+                "apiProperties": {},
+                "customSubDomainName": "[parameters('openaiServiceName')]",
+                "networkAcls": {
+                    "defaultAction": "Allow",
+                    "virtualNetworkRules": [],
+                    "ipRules": []
+                },
+                "publicNetworkAccess": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.CognitiveServices/accounts/deployments",
+            "apiVersion": "2024-10-01",
+            "name": "[concat(parameters('openaiservicename'), '/gpt-4o-mini')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.CognitiveServices/accounts', parameters('openaiServiceName'))]"
+            ],
+            "sku": {
+                "name": "GlobalStandard",
+                "capacity": 121
+            },
+            "properties": {
+                "model": {
+                    "format": "OpenAI",
+                    "name": "gpt-4o-mini",
+                    "version": "2024-07-18"
+                },
+                "versionUpgradeOption": "OnceNewDefaultVersionAvailable",
+                "currentCapacity": 121,
+                "raiPolicyName": "Microsoft.DefaultV2"
+            }
+        },
+        {
+            "type": "Microsoft.CognitiveServices/accounts/deployments",
+            "apiVersion": "2024-10-01",
+            "name": "[concat(parameters('openaiservicename'), '/embedding-ada')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.CognitiveServices/accounts', parameters('openaiServiceName'))]"
+            ],
+            "sku": {
+                "name": "Standard",
+                "capacity": 120
+            },
+            "properties": {
+                "model": {
+                    "format": "OpenAI",
+                    "name": "text-embedding-ada-002",
+                    "version": "2"
+                },
+                "versionUpgradeOption": "OnceNewDefaultVersionAvailable",
+                "currentCapacity": 120,
+                "raiPolicyName": "Microsoft.DefaultV2"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2023-05-01",
+            "name": "[parameters('storageAccountName')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "ProjectType": "aoai-your-data-service"
+            },
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "dnsEndpointType": "Standard",
+                "defaultToOAuthAuthentication": false,
+                "publicNetworkAccess": "Enabled",
+                "allowCrossTenantReplication": false,
+                "isLocalUserEnabled": false,
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": false,
+                "allowSharedKeyAccess": false,
+                "largeFileSharesState": "Enabled",
+                "networkAcls": {
+                    "resourceAccessRules": [
+
+                    ],
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "requireInfrastructureEncryption": false,
+                    "services": {
+                        "file": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "blob": {
+                            "keyType": "Account",
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "accessTier": "Hot"
+            }
+        },
+        {
+            "type": "Microsoft.Search/searchServices",
+            "apiVersion": "2024-06-01-preview",
+            "name": "[parameters('searchServicesName')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "ProjectType": "aoai-your-data-service"
+            },
+            "sku": {
+                "name": "basic"
+            },
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "replicaCount": 1,
+                "partitionCount": 1,
+                "hostingMode": "Default",
+                "publicNetworkAccess": "Enabled",
+                "networkRuleSet": {
+                    "ipRules": [],
+                    "bypass": "None"
+                },
+                "encryptionWithCmk": {
+                    "enforcement": "Unspecified"
+                },
+                "disableLocalAuth": false,
+                "authOptions": {
+                    "aadOrApiKey": {
+                        "aadAuthFailureMode": "http401WithBearerChallenge"
+                    }
+                },
+                "disabledDataExfiltrationOptions": [],
+                "semanticSearch": "free"
+            }
+        }
+    ],
+    "outputs": {
+        "openaiKey": {
+            "type": "string",
+            "value": "[listKeys(resourceId('Microsoft.CognitiveServices/accounts', parameters('openaiServiceName')), '2024-10-01').key1]"
+        },
+        "searchServiceKey": {
+            "type": "string",
+            "value": "[listAdminKeys(resourceId('Microsoft.Search/searchServices', parameters('searchServicesName')), '2020-08-01').primaryKey]"
+        },
+        "blobStorageKey": {
+            "type": "string",
+            "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2021-04-01').keys[0].value]"
+        }
+    }
+}
