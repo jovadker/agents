@@ -31,7 +31,8 @@ echo "Resource ID: $resource_id"
 echo "Tenant ID: $tenant_id"
 
 #user_id=$(az ad signed-in-user show --query id --output tsv)
-user_id="cd7092e7-9685-4513-8a9d-a4398ed49cdf"
+# service principal: spAgentsOwner
+user_id="b9b573f7-9704-4d96-b4ff-d86021b9c35f"
 echo "User ID: $user_id"
 
 # https://github.com/Azure-Samples/openai/tree/main/End_to_end_Solutions
