@@ -37,7 +37,7 @@ echo "User ID: $user_id"
 # https://github.com/Azure-Samples/openai/tree/main/End_to_end_Solutions
 
 az deployment group create --resource-group $resource_group_name \
-    --template-file ./iac/ai.json \
+    --template-file ./iac/AI.json \
     --parameters openaiServiceName=$openaiservicename \
       storageAccountName=$storageAccountName \
       searchServicesName=$searchServiceName \
