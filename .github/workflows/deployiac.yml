@@ -16,7 +16,7 @@ jobs:
          creds: ${{ secrets.AZURE_CREDENTIALS }}
      - shell: bash
        run: |
-            # Find all Solution.xml files in the solution directory and its subdirectories
+            # Provision IaC
             chmod +x ./SemKernel/deploy.sh
             cd SemKernel
             ./deploy.sh
