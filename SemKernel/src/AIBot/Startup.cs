@@ -102,6 +102,9 @@ namespace AIBot
             // Register Azure AI Search Plugin
             kernelBuilder.Plugins.AddFromType<AzureAISearchPlugin>();
 
+            // Register FileSystemPlugin
+            kernelBuilder.Plugins.AddFromType<FileSystemPlugin>();
+
             // Register the KBAgent
             services.AddTransient<KBAgent>();
 
