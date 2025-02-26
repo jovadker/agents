@@ -36,7 +36,7 @@ namespace AIBot.Agents
             "contentType": "'Text' or 'AdaptiveCard' only",
             "content": "{The content of the response, may be plain text, or JSON based adaptive card}"
         }
-        """;*/
+        */;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KBAgent"/> class.
@@ -47,6 +47,7 @@ namespace AIBot.Agents
             this._kernel = kernel;
             this._kernel.Plugins.Add(KernelPluginFactory.CreateFromType<DateTimePlugin>());
             this._kernel.Plugins.Add(KernelPluginFactory.CreateFromType<BingPlugin>());
+            this._kernel.Plugins.Add(KernelPluginFactory.CreateFromType<FileSystemPlugin>());
         }
 
         /// <summary>
