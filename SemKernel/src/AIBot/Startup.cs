@@ -105,7 +105,8 @@ namespace AIBot
             // Register the KBAgent
             services.AddTransient<KBAgent>();
 
-            
+            // Register FileSystemPlugin
+            kernelBuilder.Plugins.AddFromType<FileSystemPlugin>();
 
         }
 
